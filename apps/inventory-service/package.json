@@ -1,0 +1,48 @@
+{
+  "name": "@ecommerce-kafka/inventory-service",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "webpack-cli build",
+          "args": ["--node-env=production"],
+          "cwd": "apps/inventory-service"
+        },
+        "configurations": {
+          "development": {
+            "args": ["--node-env=development"]
+          }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": ["build"],
+        "options": {
+          "buildTarget": "@ecommerce-kafka/inventory-service:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@ecommerce-kafka/inventory-service:build:development"
+          },
+          "production": {
+            "buildTarget": "@ecommerce-kafka/inventory-service:build:production"
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-fastify": "^11.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "tslib": "^2.3.0"
+  }
+}

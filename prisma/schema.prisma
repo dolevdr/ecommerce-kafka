@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  COMPLETED
+  CREATED
+  FAILED
+  PROCESSING
+}
+
+enum ReservationStatus {
+  FAILED
+  PENDING
+  RESERVED
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  orderId    String      @unique @default(uuid())
+  customerId String
+  productId  String
+  quantity   Int
+  status     OrderStatus @default(CREATED)
+  createdAt  DateTime    @default(now())
+
+  @@map("orders")
+}
+
+model InventoryReservation {
+  id        Int               @id @default(autoincrement())
+  orderId   String            @unique
+  productId String
+  quantity  Int
+  status    ReservationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+
+  @@map("inventory_reservations")
+}
