@@ -14,6 +14,12 @@ enum OrderStatus {
   PROCESSING
 }
 
+enum PaymentStatus {
+  COMPLETED
+  FAILED
+  PENDING
+}
+
 enum ReservationStatus {
   FAILED
   PENDING
@@ -41,4 +47,15 @@ model InventoryReservation {
   createdAt DateTime          @default(now())
 
   @@map("inventory_reservations")
+}
+
+model Payment {
+  id         Int           @id @default(autoincrement())
+  orderId    String        @unique
+  customerId String
+  amount     Int
+  status     PaymentStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+
+  @@map("payments")
 }

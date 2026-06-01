@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { InventoryController } from './inventory.controller';
-import { InventoryService } from './inventory.service';
+import { PaymentController } from './payment.controller';
+import { PaymentService } from './payment.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
@@ -13,7 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
         options: {
           client: {
             brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
-            clientId: 'inventory-service-client',
+            clientId: 'payment-service-client',
           },
           producer: {
             allowAutoTopicCreation: true,
@@ -22,7 +22,7 @@ import { PrismaService } from '../prisma/prisma.service';
       },
     ]),
   ],
-  controllers: [InventoryController],
-  providers: [InventoryService, PrismaService],
+  controllers: [PaymentController],
+  providers: [PaymentService, PrismaService],
 })
-export class InventoryModule {}
+export class PaymentModule {}

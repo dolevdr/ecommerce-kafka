@@ -1,9 +1,14 @@
+import {
+  OrderCreatedEvent,
+  PaymentCompletedEvent,
+  TOPICS,
+} from '@ecommerce-kafka/shared';
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { TOPICS, OrderCreatedEvent } from '@ecommerce-kafka/shared';
+import { OrderStatus } from '@prisma/client';
+import { v4 as uuid } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './create-order.dto';
-import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class OrderService implements OnModuleInit {
@@ -44,5 +49,33 @@ export class OrderService implements OnModuleInit {
 
     this.logger.log(`Order ${order.orderId} created and event published`);
     return order;
+  }
+
+  async completeOrder(event: PaymentCompletedEvent) {
+    this.logger.log(
+      `Payment completed for Order ${event.orderId} — updating status`,
+    );
+
+    const order = await this.prisma.order.findUnique({
+      where: { orderId: event.orderId },
+    });
+
+    if (!order) {
+      this.logger.warn(`Order ${event.orderId} not found — skipping`);
+      return;
+    }
+
+    if (order.status === OrderStatus.COMPLETED) {
+      this.logger.log(`Order ${event.orderId} already completed — skipping`);
+      return order;
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { orderId: event.orderId },
+      data: { status: OrderStatus.COMPLETED },
+    });
+
+    this.logger.log(`Order ${event.orderId} status updated to COMPLETED`);
+    return updated;
   }
 }
