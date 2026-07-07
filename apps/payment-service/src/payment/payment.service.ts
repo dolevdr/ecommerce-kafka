@@ -1,6 +1,11 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { InventoryReservedEvent, PaymentCompletedEvent, TOPICS } from '@ecommerce-kafka/shared';
+import {
+  InventoryReservedEvent,
+  PaymentCompletedEvent,
+  PaymentFailedEvent,
+  TOPICS,
+} from '@ecommerce-kafka/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuid } from 'uuid';
 
@@ -33,6 +38,36 @@ export class PaymentService implements OnModuleInit {
     }
 
     const amount = event.quantity * 100;
+
+    if (amount > 300) {
+      const payment = await this.prisma.payment.create({
+        data: {
+          amount,
+          customerId: event.customerId,
+          orderId: event.orderId,
+          status: 'FAILED',
+        },
+      });
+
+      const failedEvent: PaymentFailedEvent = {
+        amount,
+        createdAt: payment.createdAt.toISOString(),
+        customerId: event.customerId,
+        eventId: uuid(),
+        orderId: event.orderId,
+        reason: `Payment declined: amount ${amount} exceeds limit of 300`,
+      };
+
+      this.kafkaClient.emit(TOPICS.PAYMENT_FAILED, {
+        key: event.orderId,
+        value: JSON.stringify(failedEvent),
+      });
+
+      this.logger.warn(
+        `Payment FAILED for Order ${event.orderId} — ${failedEvent.reason}`,
+      );
+      return payment;
+    }
 
     const payment = await this.prisma.payment.create({
       data: {

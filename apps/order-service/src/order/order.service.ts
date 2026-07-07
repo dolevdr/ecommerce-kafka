@@ -33,6 +33,11 @@ export class OrderService implements OnModuleInit {
       },
     });
 
+    await this.prisma.order.update({
+      where: { orderId: order.orderId },
+      data: { status: OrderStatus.PROCESSING },
+    });
+
     const event: OrderCreatedEvent = {
       createdAt: order.createdAt.toISOString(),
       customerId: order.customerId,
@@ -47,8 +52,8 @@ export class OrderService implements OnModuleInit {
       value: JSON.stringify(event),
     });
 
-    this.logger.log(`Order ${order.orderId} created and event published`);
-    return order;
+    this.logger.log(`Order ${order.orderId} created (PROCESSING) and event published`);
+    return { ...order, status: OrderStatus.PROCESSING };
   }
 
   async completeOrder(event: PaymentCompletedEvent) {
@@ -65,8 +70,8 @@ export class OrderService implements OnModuleInit {
       return;
     }
 
-    if (order.status === OrderStatus.COMPLETED) {
-      this.logger.log(`Order ${event.orderId} already completed — skipping`);
+    if (order.status === OrderStatus.COMPLETED || order.status === OrderStatus.FAILED) {
+      this.logger.log(`Order ${event.orderId} already in terminal state (${order.status}) — skipping`);
       return order;
     }
 
@@ -76,6 +81,34 @@ export class OrderService implements OnModuleInit {
     });
 
     this.logger.log(`Order ${event.orderId} status updated to COMPLETED`);
+    return updated;
+  }
+
+  async failOrder(orderId: string, reason: string) {
+    this.logger.log(
+      `Failing Order ${orderId} — reason: ${reason}`,
+    );
+
+    const order = await this.prisma.order.findUnique({
+      where: { orderId },
+    });
+
+    if (!order) {
+      this.logger.warn(`Order ${orderId} not found — skipping`);
+      return;
+    }
+
+    if (order.status === OrderStatus.COMPLETED || order.status === OrderStatus.FAILED) {
+      this.logger.log(`Order ${orderId} already in terminal state (${order.status}) — skipping`);
+      return order;
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { orderId },
+      data: { status: OrderStatus.FAILED },
+    });
+
+    this.logger.log(`Order ${orderId} status updated to FAILED`);
     return updated;
   }
 }
