@@ -1,9 +1,9 @@
 import { EventTracerKafkaSerializer } from '@ariadne/sdk-nestjs';
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ShippingController } from './shipping.controller';
+import { ShippingService } from './shipping.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { InventoryController } from './inventory.controller';
-import { InventoryService } from './inventory.service';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { InventoryService } from './inventory.service';
           options: {
             client: {
               brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
-              clientId: 'inventory-service-client',
+              clientId: 'shipping-service-client',
             },
             producer: {
               allowAutoTopicCreation: true,
@@ -27,7 +27,7 @@ import { InventoryService } from './inventory.service';
       },
     ]),
   ],
-  controllers: [InventoryController],
-  providers: [InventoryService, PrismaService],
+  controllers: [ShippingController],
+  providers: [ShippingService, PrismaService],
 })
-export class InventoryModule {}
+export class ShippingModule {}

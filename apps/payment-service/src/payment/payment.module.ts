@@ -1,3 +1,4 @@
+import { EventTracerKafkaSerializer } from '@ariadne/sdk-nestjs';
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PaymentController } from './payment.controller';
@@ -6,19 +7,23 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'KAFKA_CLIENT',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
-            clientId: 'payment-service-client',
+        inject: [EventTracerKafkaSerializer],
+        useFactory: (serializer: EventTracerKafkaSerializer) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+              clientId: 'payment-service-client',
+            },
+            producer: {
+              allowAutoTopicCreation: true,
+            },
+            serializer,
           },
-          producer: {
-            allowAutoTopicCreation: true,
-          },
-        },
+        }),
       },
     ]),
   ],

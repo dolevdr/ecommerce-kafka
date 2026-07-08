@@ -5,6 +5,10 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@ariadne/protocol": "file:vendor/ariadne/ariadne-protocol-0.0.1.tgz",
+    "@ariadne/transport-core": "file:vendor/ariadne/ariadne-transport-core-0.0.1.tgz",
+    "@ariadne/transport-kafka": "file:vendor/ariadne/ariadne-transport-kafka-0.0.1.tgz",
+    "@ariadne/sdk-nestjs": "file:vendor/ariadne/ariadne-sdk-nestjs-0.0.1.tgz",
     "@nestjs/common": "^11.1.23",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.23",

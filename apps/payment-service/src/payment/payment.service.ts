@@ -84,6 +84,8 @@ export class PaymentService implements OnModuleInit {
       customerId: payment.customerId,
       eventId: uuid(),
       orderId: payment.orderId,
+      productId: event.productId,
+      quantity: event.quantity,
     };
 
     this.kafkaClient.emit(TOPICS.PAYMENT_COMPLETED, {

@@ -2,6 +2,8 @@ import {
   type InventoryReservationFailedEvent,
   type PaymentCompletedEvent,
   type PaymentFailedEvent,
+  type ShipmentDeliveredEvent,
+  type ShipmentDispatchedEvent,
   TOPICS,
 } from '@ecommerce-kafka/shared';
 import { Body, Controller, Post } from '@nestjs/common';
@@ -19,7 +21,9 @@ export class OrderController {
   }
 
   @EventPattern(TOPICS.INVENTORY_RESERVATION_FAILED)
-  async handleInventoryFailed(@Payload() event: InventoryReservationFailedEvent) {
+  async handleInventoryFailed(
+    @Payload() event: InventoryReservationFailedEvent,
+  ) {
     await this.orderService.failOrder(event.orderId, event.reason);
   }
 
@@ -31,5 +35,15 @@ export class OrderController {
   @EventPattern(TOPICS.PAYMENT_FAILED)
   async handlePaymentFailed(@Payload() event: PaymentFailedEvent) {
     await this.orderService.failOrder(event.orderId, event.reason);
+  }
+
+  @EventPattern(TOPICS.SHIPMENT_DISPATCHED)
+  async handleShipmentDispatched(@Payload() event: ShipmentDispatchedEvent) {
+    await this.orderService.shipOrder(event.orderId);
+  }
+
+  @EventPattern(TOPICS.SHIPMENT_DELIVERED)
+  async handleShipmentDelivered(@Payload() event: ShipmentDeliveredEvent) {
+    await this.orderService.deliverOrder(event.orderId);
   }
 }

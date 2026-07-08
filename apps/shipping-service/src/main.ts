@@ -16,10 +16,10 @@ async function bootstrap() {
       client: {
         allowAutoTopicCreation: true,
         brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
-        clientId: 'payment-service',
+        clientId: 'shipping-service',
       },
       consumer: {
-        groupId: 'payment-service-group',
+        groupId: 'shipping-service-group',
       },
       subscribe: {
         fromBeginning: false,
@@ -29,9 +29,9 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
 
-  const port = process.env.PAYMENT_SERVICE_PORT || 3003;
+  const port = process.env.SHIPPING_SERVICE_PORT || 3005;
   await app.listen(port, '0.0.0.0');
-  Logger.log(`Payment Service running on http://localhost:${port}`);
+  Logger.log(`Shipping Service running on http://localhost:${port}`);
 }
 
 bootstrap();

@@ -111,4 +111,48 @@ export class OrderService implements OnModuleInit {
     this.logger.log(`Order ${orderId} status updated to FAILED`);
     return updated;
   }
+
+  async shipOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { orderId } });
+
+    if (!order) {
+      this.logger.warn(`Order ${orderId} not found — skipping ship`);
+      return;
+    }
+
+    if (order.status === OrderStatus.FAILED || order.status === OrderStatus.DELIVERED) {
+      this.logger.log(`Order ${orderId} in terminal state (${order.status}) — skipping ship`);
+      return order;
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { orderId },
+      data: { status: OrderStatus.SHIPPED },
+    });
+
+    this.logger.log(`Order ${orderId} status updated to SHIPPED`);
+    return updated;
+  }
+
+  async deliverOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { orderId } });
+
+    if (!order) {
+      this.logger.warn(`Order ${orderId} not found — skipping deliver`);
+      return;
+    }
+
+    if (order.status === OrderStatus.FAILED || order.status === OrderStatus.DELIVERED) {
+      this.logger.log(`Order ${orderId} in terminal state (${order.status}) — skipping deliver`);
+      return order;
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { orderId },
+      data: { status: OrderStatus.DELIVERED },
+    });
+
+    this.logger.log(`Order ${orderId} status updated to DELIVERED`);
+    return updated;
+  }
 }

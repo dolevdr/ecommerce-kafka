@@ -1,13 +1,13 @@
 import { EventTracerModule } from '@ariadne/sdk-nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PaymentModule } from '../payment/payment.module';
+import { ShippingModule } from '../shipping/shipping.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     EventTracerModule.forRoot({
-      serviceName: 'payment-service',
+      serviceName: 'shipping-service',
       tenantId: 'acme',
       transport: {
         kafka: { brokers: [process.env.KAFKA_BROKER || 'localhost:9092'] },
@@ -21,10 +21,14 @@ import { PaymentModule } from '../payment/payment.module';
           'amount',
           'reason',
           'eventId',
+          'shipmentId',
+          'carrier',
+          'trackingNumber',
+          'deliveredAt',
         ],
       },
     }),
-    PaymentModule,
+    ShippingModule,
   ],
 })
 export class AppModule {}

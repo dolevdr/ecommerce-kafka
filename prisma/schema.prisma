@@ -10,8 +10,10 @@ datasource db {
 enum OrderStatus {
   COMPLETED
   CREATED
+  DELIVERED
   FAILED
   PROCESSING
+  SHIPPED
 }
 
 enum PaymentStatus {
@@ -25,6 +27,12 @@ enum ReservationStatus {
   PENDING
   RELEASED
   RESERVED
+}
+
+enum ShipmentStatus {
+  DELIVERED
+  DISPATCHED
+  FAILED
 }
 
 model Order {
@@ -59,4 +67,19 @@ model Payment {
   createdAt  DateTime      @default(now())
 
   @@map("payments")
+}
+
+model Shipment {
+  id             Int            @id @default(autoincrement())
+  orderId        String         @unique
+  customerId     String
+  productId      String
+  quantity       Int
+  carrier        String
+  trackingNumber String
+  status         ShipmentStatus @default(DISPATCHED)
+  createdAt      DateTime       @default(now())
+  deliveredAt    DateTime?
+
+  @@map("shipments")
 }
